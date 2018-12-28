@@ -101,7 +101,7 @@ public class CodegenTestFiles {
 
     @NotNull
     public static CodegenTestFiles create(@NotNull String fileName, @NotNull String contentWithDiagnosticMarkup, @NotNull Project project) {
-        String content = CheckerTestUtil.INSTANCE.parseDiagnosedRanges(contentWithDiagnosticMarkup, new ArrayList<>());
+        String content = CheckerTestUtil.INSTANCE.parseDiagnosedRanges(contentWithDiagnosticMarkup, new ArrayList<>(), null);
         KtFile file = KotlinTestUtils.createFile(fileName, content, project);
         List<PsiErrorElement> ranges = AnalyzingUtils.getSyntaxErrorRanges(file);
         assert ranges.isEmpty() : "Syntax errors found in " + file + ": " + ranges;

@@ -16,10 +16,15 @@ import org.jetbrains.kotlin.checkers.diagnostics.*
 import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory
 import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory0
 import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory1
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl
+import org.jetbrains.kotlin.psi.psiUtil.endOffset
+import org.jetbrains.kotlin.psi.psiUtil.startOffset
 import org.jetbrains.kotlin.resolve.AnalyzingUtils
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.MultiTargetPlatform
+import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
 import java.util.*
 import java.util.regex.Pattern
 
@@ -42,7 +47,11 @@ object CheckerTestUtil {
         root: PsiElement,
         markDynamicCalls: Boolean,
         dynamicCallDescriptors: MutableList<DeclarationDescriptor>,
-        withNewInference: Boolean
+        withNewInference: Boolean,
+        languageVersionSettings: LanguageVersionSettings,
+        dataFlowValueFactory: DataFlowValueFactory?,
+        moduleDescriptor: ModuleDescriptorImpl?,
+        diagnosedRanges: MutableMap<IntRange, MutableSet<String>>? = null
     ): List<ActualDiagnostic> {
         val result = getDiagnosticsIncludingSyntaxErrors(
             bindingContext,
@@ -50,7 +59,11 @@ object CheckerTestUtil {
             markDynamicCalls,
             dynamicCallDescriptors,
             null,
-            withNewInference
+            withNewInference,
+            languageVersionSettings,
+            dataFlowValueFactory,
+            moduleDescriptor,
+            diagnosedRanges
         )
         val sortedBindings = implementingModulesBindings.sortedBy { it.first }
 
@@ -64,7 +77,11 @@ object CheckerTestUtil {
                     markDynamicCalls,
                     dynamicCallDescriptors,
                     (platform as MultiTargetPlatform.Specific).platform,
-                    withNewInference
+                    withNewInference,
+                    languageVersionSettings,
+                    dataFlowValueFactory,
+                    moduleDescriptor,
+                    diagnosedRanges
                 )
             )
         }
@@ -78,7 +95,11 @@ object CheckerTestUtil {
         markDynamicCalls: Boolean,
         dynamicCallDescriptors: MutableList<DeclarationDescriptor>,
         platform: String?,
-        withNewInference: Boolean
+        withNewInference: Boolean,
+        languageVersionSettings: LanguageVersionSettings,
+        dataFlowValueFactory: DataFlowValueFactory?,
+        moduleDescriptor: ModuleDescriptorImpl?,
+        diagnosedRanges: MutableMap<IntRange, MutableSet<String>>? = null
     ): MutableList<ActualDiagnostic> {
         val diagnostics: MutableList<ActualDiagnostic> = mutableListOf()
 
@@ -99,7 +120,11 @@ object CheckerTestUtil {
                 markDynamicCalls,
                 dynamicCallDescriptors,
                 platform,
-                withNewInference
+                withNewInference,
+                languageVersionSettings,
+                dataFlowValueFactory,
+                moduleDescriptor,
+                diagnosedRanges
             )
         )
 
@@ -112,7 +137,11 @@ object CheckerTestUtil {
         markDynamicCalls: Boolean,
         dynamicCallDescriptors: MutableList<DeclarationDescriptor>,
         platform: String?,
-        withNewInference: Boolean
+        withNewInference: Boolean,
+        languageVersionSettings: LanguageVersionSettings,
+        dataFlowValueFactory: DataFlowValueFactory?,
+        moduleDescriptor: ModuleDescriptorImpl?,
+        diagnosedRanges: MutableMap<IntRange, MutableSet<String>>?
     ): List<ActualDiagnostic> {
         val debugAnnotations = mutableListOf<ActualDiagnostic>()
 
@@ -142,10 +171,16 @@ object CheckerTestUtil {
 
         for ((context, factory) in factoryList) {
             for ((expression, _) in bindingContext.getSliceContents(context)) {
-                if (PsiTreeUtil.isAncestor(root, expression, false)) {
+                val needRender = !factory.withExplicitDefinitionOnly
+                        || diagnosedRanges?.get(expression.startOffset..expression.endOffset)?.contains(factory.name) == true
+
+                if (PsiTreeUtil.isAncestor(root, expression, false) && needRender) {
                     val diagnostic = factory.createDiagnostic(
                         expression,
-                        bindingContext
+                        bindingContext,
+                        dataFlowValueFactory,
+                        languageVersionSettings,
+                        moduleDescriptor
                     )
                     debugAnnotations.add(ActualDiagnostic(diagnostic, platform, withNewInference))
                 }
@@ -325,8 +360,11 @@ object CheckerTestUtil {
         return if (iterator.hasNext()) iterator.next() else null
     }
 
-
-    fun parseDiagnosedRanges(text: String, result: MutableList<DiagnosedRange>): String {
+    fun parseDiagnosedRanges(
+        text: String,
+        rangesList: MutableList<DiagnosedRange>,
+        rangesMap: MutableMap<IntRange, MutableSet<String>>? = null
+    ): String {
         val matcher = rangeStartOrEndPattern.matcher(text)
         val opened = Stack<DiagnosedRange>()
         var offsetCompensation = 0
@@ -342,7 +380,7 @@ object CheckerTestUtil {
                 while (diagnosticTypeMatcher.find())
                     range.addDiagnostic(diagnosticTypeMatcher.group())
                 opened.push(range)
-                result.add(range)
+                rangesList.add(range)
             }
             offsetCompensation += matchedText.length
         }
@@ -350,6 +388,14 @@ object CheckerTestUtil {
         assert(opened.isEmpty()) { "Stack is not empty" }
 
         matcher.reset()
+
+        if (rangesMap != null) {
+            rangesList.forEach {
+                val range = it.start..it.end
+                rangesMap.putIfAbsent(range, mutableSetOf())
+                rangesMap[range]!! += it.getDiagnostics().map { it.name }
+            }
+        }
 
         return matcher.replaceAll("")
     }

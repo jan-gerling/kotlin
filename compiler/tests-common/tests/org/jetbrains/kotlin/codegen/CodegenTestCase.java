@@ -367,7 +367,7 @@ public abstract class CodegenTestCase extends KtUsefulTestCase {
         List<KtFile> ktFiles = new ArrayList<>(files.size());
         for (TestFile file : files) {
             if (file.name.endsWith(".kt")) {
-                String content = CheckerTestUtil.INSTANCE.parseDiagnosedRanges(file.content, new ArrayList<>(0));
+                String content = CheckerTestUtil.INSTANCE.parseDiagnosedRanges(file.content, new ArrayList<>(0), null);
                 ktFiles.add(KotlinTestUtils.createFile(file.name, content, project));
             }
         }
