@@ -509,6 +509,7 @@ object CheckerTestUtil {
         }
 
         if (diagnosticsAsText.size != 0) {
+            diagnosticsAsText.sort()
             result.append("<!${diagnosticsAsText.joinToString(", ")}!>")
             isSkip = false
         }
