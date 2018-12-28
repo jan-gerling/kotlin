@@ -33,6 +33,9 @@ private data class DiagnosticData(
 private abstract class Test(private vararg val expectedMessages: String) {
     fun test(psiFile: PsiFile, environment: KotlinCoreEnvironment) {
         val bindingContext = JvmResolveUtil.analyze(psiFile as KtFile, environment).bindingContext
+        val emptyModule = KotlinTestUtils.createEmptyModule()
+        val container = createContainerForTests(environment.project, emptyModule)
+        val dataFlowValueFactory = container.dataFlowValueFactory
         val expectedText = CheckerTestUtil.addDiagnosticMarkersToText(
             psiFile,
             CheckerTestUtil.getDiagnosticsIncludingSyntaxErrors(
@@ -40,12 +43,15 @@ private abstract class Test(private vararg val expectedMessages: String) {
                 false,
                 mutableListOf(),
                 null,
-                false
+                false,
+                LanguageVersionSettingsImpl.DEFAULT,
+                dataFlowValueFactory,
+                emptyModule
             )
         ).toString()
         val diagnosedRanges = Lists.newArrayList<DiagnosedRange>()
 
-        CheckerTestUtil.parseDiagnosedRanges(expectedText, diagnosedRanges)
+        CheckerTestUtil.parseDiagnosedRanges(expectedText, diagnosedRanges, mutableMapOf())
 
         val actualDiagnostics = CheckerTestUtil.getDiagnosticsIncludingSyntaxErrors(
             bindingContext,
@@ -53,7 +59,10 @@ private abstract class Test(private vararg val expectedMessages: String) {
             false,
             mutableListOf(),
             null,
-            false
+            false,
+            LanguageVersionSettingsImpl.DEFAULT,
+            dataFlowValueFactory,
+            emptyModule
         )
 
         makeTestData(actualDiagnostics, diagnosedRanges)
