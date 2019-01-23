@@ -2298,6 +2298,14 @@ public final class kotlin/collections/UArraysKt {
 	public static final fun contentToString-GBYM_sE ([B)Ljava/lang/String;
 	public static final fun contentToString-QwZRm1k ([J)Ljava/lang/String;
 	public static final fun contentToString-rL5Bavg ([S)Ljava/lang/String;
+	public static final fun fill-2fe2U9s ([IIII)V
+	public static synthetic fun fill-2fe2U9s$default ([IIIIILjava/lang/Object;)V
+	public static final fun fill-EtDCXyQ ([SSII)V
+	public static synthetic fun fill-EtDCXyQ$default ([SSIIILjava/lang/Object;)V
+	public static final fun fill-K6DWlUc ([JJII)V
+	public static synthetic fun fill-K6DWlUc$default ([JJIIILjava/lang/Object;)V
+	public static final fun fill-WpHrYlw ([BBII)V
+	public static synthetic fun fill-WpHrYlw$default ([BBIIILjava/lang/Object;)V
 	public static final fun random-2D5oskM ([ILkotlin/random/Random;)I
 	public static final fun random-JzugnMA ([JLkotlin/random/Random;)J
 	public static final fun random-oSF2wD8 ([BLkotlin/random/Random;)B
