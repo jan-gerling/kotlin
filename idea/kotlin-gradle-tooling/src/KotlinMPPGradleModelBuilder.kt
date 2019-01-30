@@ -50,7 +50,8 @@ class KotlinMPPGradleModelBuilder : ModelBuilderService {
         computeSourceSetsDeferredInfo(sourceSets, targets)
         val coroutinesState = getCoroutinesState(project)
         reportUnresolvedDependencies(targets)
-        return KotlinMPPGradleModelImpl(sourceSetMap, targets, ExtraFeaturesImpl(coroutinesState))
+        val kotlinNativeHome = KotlinNativeHomeEvaluator.getKotlinNativeHome(project)
+        return KotlinMPPGradleModelImpl(sourceSetMap, targets, ExtraFeaturesImpl(coroutinesState), kotlinNativeHome)
     }
 
     private fun reportUnresolvedDependencies(targets: Collection<KotlinTarget>) {
