@@ -406,7 +406,15 @@ object CheckerTestUtil {
     }
 
     fun addDiagnosticMarkersToText(psiFile: PsiFile, diagnostics: Collection<ActualDiagnostic>) =
-        addDiagnosticMarkersToText(psiFile, diagnostics, emptyMap(), { it.text }, emptyList(), false)
+        addDiagnosticMarkersToText(
+            psiFile,
+            diagnostics,
+            emptyMap(),
+            { it.text },
+            emptyList(),
+            false,
+            false
+        )
 
     fun addDiagnosticMarkersToText(
         psiFile: PsiFile,
@@ -414,7 +422,8 @@ object CheckerTestUtil {
         diagnosticToExpectedDiagnostic: Map<AbstractTestDiagnostic, TextDiagnostic>,
         getFileText: com.intellij.util.Function<PsiFile, String>,
         uncheckedDiagnostics: Collection<PositionalTextDiagnostic>,
-        withNewInferenceDirective: Boolean
+        withNewInferenceDirective: Boolean,
+        renderDiagnosticMessages: Boolean
     ): StringBuffer {
         val text = getFileText.`fun`(psiFile)
         val result = StringBuffer()
@@ -436,7 +445,13 @@ object CheckerTestUtil {
                 opened.pop()
             }
             while (currentDescriptor != null && i == currentDescriptor.start) {
-                val isSkip = openDiagnosticsString(result, currentDescriptor, diagnosticToExpectedDiagnostic, withNewInferenceDirective)
+                val isSkip = openDiagnosticsString(
+                    result,
+                    currentDescriptor,
+                    diagnosticToExpectedDiagnostic,
+                    withNewInferenceDirective,
+                    renderDiagnosticMessages
+                )
 
                 if (currentDescriptor.end == i && !isSkip)
                     closeDiagnosticString(result)
@@ -450,7 +465,13 @@ object CheckerTestUtil {
         if (currentDescriptor != null) {
             assert(currentDescriptor.start == text.length)
             assert(currentDescriptor.end == text.length)
-            val isSkip = openDiagnosticsString(result, currentDescriptor, diagnosticToExpectedDiagnostic, withNewInferenceDirective)
+            val isSkip = openDiagnosticsString(
+                result,
+                currentDescriptor,
+                diagnosticToExpectedDiagnostic,
+                withNewInferenceDirective,
+                renderDiagnosticMessages
+            )
 
             if (!isSkip)
                 opened.push(currentDescriptor)
@@ -470,7 +491,8 @@ object CheckerTestUtil {
         result: StringBuffer,
         currentDescriptor: AbstractDiagnosticDescriptor,
         diagnosticToExpectedDiagnostic: Map<AbstractTestDiagnostic, TextDiagnostic>,
-        withNewInferenceDirective: Boolean
+        withNewInferenceDirective: Boolean,
+        renderDiagnosticMessages: Boolean
     ): Boolean {
         var isSkip = true
         val diagnosticsAsText = mutableListOf<String>()
@@ -498,7 +520,17 @@ object CheckerTestUtil {
                             diagnosticText.append(diagnostic.platform)
                             diagnosticText.append(":")
                         }
-                        diagnosticsAsText.add(diagnosticText.toString() + diagnostic.name)
+                        diagnosticText.append(diagnostic.name)
+                        if (renderDiagnosticMessages) {
+                            val textDiagnostic = TextDiagnostic.asTextDiagnostic(diagnostic)
+                            if (textDiagnostic.parameters != null) {
+                                diagnosticText
+                                    .append("(")
+                                    .append(textDiagnostic.parameters.joinToString(", "))
+                                    .append(")")
+                            }
+                        }
+                        diagnosticsAsText.add(diagnosticText.toString())
                     }
                 }
             }
