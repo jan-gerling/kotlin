@@ -146,7 +146,7 @@ sealed class InliningScope {
     }
 }
 
-class ImportInfoFragmentInliningScope(
+class ImportInfoFragmentInliningScope private constructor(
     override val fragment: JsProgramFragment
 ) : InliningScope() {
 
@@ -242,10 +242,17 @@ class ImportInfoFragmentInliningScope(
             }
         }.internalName
     }
+
+    companion object {
+        fun process(fragment: JsProgramFragment, fn: (ImportInfoFragmentInliningScope) -> Unit) {
+            val scope = ImportInfoFragmentInliningScope(fragment)
+            fn(scope)
+            scope.update()
+        }
+    }
 }
 
-class ImportIntoWrapperInliningScope(
-    val function: JsFunction,
+class ImportIntoWrapperInliningScope private constructor(
     private val wrapperBody: JsBlock,
     override val fragment: JsProgramFragment
 ) : InliningScope() {
@@ -274,5 +281,13 @@ class ImportIntoWrapperInliningScope(
 
     override fun update() {
         wrapperBody.statements.addAll(0, additionalStatements)
+    }
+
+    companion object {
+        fun process(wrapperBody: JsBlock, fragment: JsProgramFragment, fn: (ImportIntoWrapperInliningScope) -> Unit) {
+            val scope = ImportIntoWrapperInliningScope(wrapperBody, fragment)
+            fn(scope)
+            scope.update()
+        }
     }
 }

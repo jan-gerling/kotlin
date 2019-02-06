@@ -72,9 +72,9 @@ class CoroutineTransformer : JsVisitorWithContextImpl() {
 fun transformCoroutines(fragments: Iterable<JsProgramFragment>) {
     val coroutineTransformer = CoroutineTransformer()
     for (fragment in fragments) {
-        val scope = ImportInfoFragmentInliningScope(fragment)
-        InlineSuspendFunctionSplitter(scope).accept(scope.allCode)
-        coroutineTransformer.accept(scope.allCode)
-        scope.update()
+        ImportInfoFragmentInliningScope.process(fragment) { scope ->
+            InlineSuspendFunctionSplitter(scope).accept(scope.allCode)
+            coroutineTransformer.accept(scope.allCode)
+        }
     }
 }
