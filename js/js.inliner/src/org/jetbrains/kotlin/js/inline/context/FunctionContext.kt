@@ -41,7 +41,7 @@ class FunctionContext(
     fun scopeForFragment(fragment: JsProgramFragment) = if (fragment in inliner.translationResult.newFragments) {
         inliningScopeCache.computeIfAbsent(fragment) {
             loadFragment(fragment)
-            ProgramFragmentInliningScope(fragment)
+            ImportInfoFragmentInliningScope(fragment)
         }
     } else null
 
@@ -139,7 +139,7 @@ class FunctionContext(
         }
     }
 
-    private val inliningScopeCache = mutableMapOf<JsProgramFragment, ProgramFragmentInliningScope>()
+    private val inliningScopeCache = mutableMapOf<JsProgramFragment, ImportInfoFragmentInliningScope>()
 
     private fun loadFragment(fragment: JsProgramFragment) {
         fragmentInfo.computeIfAbsent(fragment) {

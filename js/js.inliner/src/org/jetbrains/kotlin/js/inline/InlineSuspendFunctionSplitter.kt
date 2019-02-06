@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.js.backend.ast.metadata.isInlineableCoroutineBody
 import org.jetbrains.kotlin.js.translate.expression.InlineMetadata
 
 class InlineSuspendFunctionSplitter(
-    val scope: ProgramFragmentInliningScope
+    val scope: ImportInfoFragmentInliningScope
 ) : JsVisitorWithContextImpl() {
 
     override fun endVisit(x: JsExpressionStatement, ctx: JsContext<*>) {

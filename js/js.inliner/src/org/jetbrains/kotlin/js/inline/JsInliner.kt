@@ -44,7 +44,7 @@ class JsInliner(
             val (function, wrapperBody) = inlineFn.fn
 
             if (wrapperBody != null) {
-                val scope = PublicInlineFunctionInliningScope(function, wrapperBody, containingScope.fragment)
+                val scope = ImportIntoWrapperInliningScope(function, wrapperBody, containingScope.fragment)
                 scope.process(wrapperBody)
                 scope.update()
             } else {
