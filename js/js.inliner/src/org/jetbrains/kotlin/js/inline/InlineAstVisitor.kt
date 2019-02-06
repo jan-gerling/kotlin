@@ -130,7 +130,7 @@ class InlineAstVisitor(
 
     private fun hasToBeInlined(call: JsInvocation): Boolean {
         val strategy = call.inlineStrategy
-        return if (strategy == null || !strategy.isInline) false else jsInliner.functionContext.hasFunctionDefinition(call, scope.fragment)
+        return if (strategy == null || !strategy.isInline) false else jsInliner.functionDefinitionLoader.hasFunctionDefinition(call, scope.fragment)
     }
 
     private fun patchReturnsFromSecondaryConstructor(function: JsFunction) {

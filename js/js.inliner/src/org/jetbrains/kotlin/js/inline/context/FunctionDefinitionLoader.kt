@@ -25,7 +25,7 @@ import org.jetbrains.kotlin.js.inline.util.*
 import org.jetbrains.kotlin.js.translate.context.Namer
 import java.util.HashMap
 
-class FunctionContext(
+class FunctionDefinitionLoader(
     private val inliner: JsInliner
 ) {
     fun getFunctionDefinition(call: JsInvocation, fragment: JsProgramFragment): InlineFunctionDefinition {

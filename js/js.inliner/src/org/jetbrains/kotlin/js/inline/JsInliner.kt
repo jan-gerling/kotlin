@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticSink
 import org.jetbrains.kotlin.js.backend.ast.*
 import org.jetbrains.kotlin.js.backend.ast.metadata.synthetic
 import org.jetbrains.kotlin.js.config.JsConfig
-import org.jetbrains.kotlin.js.inline.context.FunctionContext
+import org.jetbrains.kotlin.js.inline.context.FunctionDefinitionLoader
 import org.jetbrains.kotlin.js.inline.context.InliningContext
 
 import org.jetbrains.kotlin.js.translate.general.AstGenerationResult
@@ -21,9 +21,9 @@ class JsInliner(
     val translationResult: AstGenerationResult
 ) {
 
-    val functionContext = FunctionContext(this)
+    val functionDefinitionLoader = FunctionDefinitionLoader(this)
 
-    val cycleReporter = InlinerCycleReporter(trace, functionContext)
+    val cycleReporter = InlinerCycleReporter(trace, functionDefinitionLoader)
 
     fun process() {
         for (fragment in translationResult.newFragments) {
@@ -49,7 +49,7 @@ class JsInliner(
     }
 
     fun inline(scope: InliningScope, call: JsInvocation, currentStatement: JsStatement?): InlineableResult {
-        val definition = functionContext.getFunctionDefinition(call, scope.fragment)
+        val definition = functionDefinitionLoader.getFunctionDefinition(call, scope.fragment)
 
         val function = scope.importFunctionDefinition(definition)
 
