@@ -12,4 +12,10 @@ import org.jetbrains.kotlin.fir.expressions.FirExpression
 abstract class FirAbstractElement(
     final override val session: FirSession,
     final override val psi: PsiElement?
-) : FirElement
+) : FirElement {
+    init {
+        if (psi != null) {
+            session.associate(this, psi)
+        }
+    }
+}

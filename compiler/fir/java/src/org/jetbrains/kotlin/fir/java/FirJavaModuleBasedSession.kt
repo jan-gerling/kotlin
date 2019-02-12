@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.fir.java
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.analyzer.ModuleInfo
 import org.jetbrains.kotlin.fir.*
@@ -22,6 +23,8 @@ class FirJavaModuleBasedSession(
     dependenciesProvider: FirSymbolProvider? = null
 ) : FirModuleBasedSession(moduleInfo) {
 
+    private val psiToFir: MutableMap<PsiElement, FirElement> = mutableMapOf()
+
     init {
         sessionProvider.sessionCache[moduleInfo] = this
         registerComponent(
@@ -36,6 +39,12 @@ class FirJavaModuleBasedSession(
             )
         )
     }
+
+    override fun associate(fir: FirElement, psi: PsiElement) {
+        psiToFir[psi] = fir
+    }
+
+    override fun getFir(psi: PsiElement): FirElement? = psiToFir[psi]
 }
 
 class FirLibrarySession(

@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.fir
 
+import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.analyzer.ModuleInfo
 import kotlin.reflect.KClass
 
@@ -17,6 +18,10 @@ interface FirSession {
 
     fun <T : Any> getService(kclass: KClass<T>): T =
         components[kclass] as T
+
+    fun associate(fir: FirElement, psi: PsiElement) {}
+
+    fun getFir(psi: PsiElement): FirElement? = null
 }
 
 interface FirSessionProvider {
