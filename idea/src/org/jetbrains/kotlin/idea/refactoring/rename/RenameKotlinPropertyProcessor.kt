@@ -411,11 +411,11 @@ class RenameKotlinPropertyProcessor : RenameKotlinPsiProcessor() {
             }
         }
 
-        super.renameElement(element, JvmAbi.setterName(newNameUnquoted).quoteIfNeeded(),
+        super.renameElement(element.copy(), JvmAbi.setterName(newNameUnquoted).quoteIfNeeded(),
                             refKindUsages[UsageKind.SETTER_USAGE]?.toTypedArray() ?: arrayOf<UsageInfo>(),
                             null)
 
-        super.renameElement(element, JvmAbi.getterName(newNameUnquoted).quoteIfNeeded(),
+        super.renameElement(element.copy(), JvmAbi.getterName(newNameUnquoted).quoteIfNeeded(),
                             refKindUsages[UsageKind.GETTER_USAGE]?.toTypedArray() ?: arrayOf<UsageInfo>(),
                             null)
 
