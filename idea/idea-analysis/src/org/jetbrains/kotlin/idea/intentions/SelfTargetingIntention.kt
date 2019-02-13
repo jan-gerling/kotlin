@@ -28,6 +28,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.idea.inspections.IntentionBasedInspection
+import org.jetbrains.kotlin.idea.util.doNotAnalyzeInCidrIde
 import org.jetbrains.kotlin.psi.CREATE_BY_PATTERN_MAY_NOT_REFORMAT
 import org.jetbrains.kotlin.psi.KtBlockExpression
 import org.jetbrains.kotlin.psi.KtElement
@@ -55,6 +56,8 @@ abstract class SelfTargetingIntention<TElement : PsiElement>(
     abstract fun applyTo(element: TElement, editor: Editor?)
 
     private fun getTarget(editor: Editor, file: PsiFile): TElement? {
+        if (file.doNotAnalyzeInCidrIde) return null
+
         val offset = editor.caretModel.offset
         val leaf1 = file.findElementAt(offset)
         val leaf2 = file.findElementAt(offset - 1)

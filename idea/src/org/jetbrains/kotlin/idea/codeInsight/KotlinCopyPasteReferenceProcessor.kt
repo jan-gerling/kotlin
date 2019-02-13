@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.idea.kdoc.KDocReference
 import org.jetbrains.kotlin.idea.references.*
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.idea.util.application.runWriteAction
+import org.jetbrains.kotlin.idea.util.doNotAnalyzeInCidrIde
 import org.jetbrains.kotlin.idea.util.getFileResolutionScope
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.kdoc.psi.api.KDocElement
@@ -123,6 +124,8 @@ class KotlinCopyPasteReferenceProcessor : CopyPastePostProcessor<KotlinReference
             startOffsets: IntArray,
             endOffsets: IntArray
     ): List<KotlinReferenceData> {
+        if (file.doNotAnalyzeInCidrIde) return listOf()
+
         val ranges = toTextRanges(startOffsets, endOffsets)
         val elementsByRange = ranges.associateBy({ it }, {
             file.elementsInRange(it).filter { it is KtElement || it is KDocElement }
@@ -214,7 +217,7 @@ class KotlinCopyPasteReferenceProcessor : CopyPastePostProcessor<KotlinReference
     }
 
     private fun findReferencesToRestore(file: PsiFile, blockStart: Int, referenceData: Array<out KotlinReferenceData>): List<ReferenceToRestoreData> {
-        if (file !is KtFile) return listOf()
+        if (file !is KtFile || file.doNotAnalyzeInCidrIde) return listOf()
 
         val references = referenceData.map { it to findReference(it, file, blockStart) }
         val bindingContext = try {

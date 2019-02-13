@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.idea.references.KtDestructuringDeclarationReference
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.idea.references.resolveMainReferenceToDescriptors
+import org.jetbrains.kotlin.idea.util.doNotAnalyzeInCidrIde
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
@@ -79,6 +80,7 @@ class KotlinTargetElementEvaluator : TargetElementEvaluatorEx, TargetElementUtil
     override fun includeSelfInGotoImplementation(element: PsiElement): Boolean = !(element is KtClass && element.isAbstract())
 
     override fun getElementByReference(ref: PsiReference, flags: Int): PsiElement? {
+        if (ref.element.doNotAnalyzeInCidrIde) return null
         if (ref is KtSimpleNameReference && ref.expression is KtLabelReferenceExpression) {
             val refTarget = ref.resolve() as? KtExpression ?: return null
             if (!BitUtil.isSet(flags, DO_NOT_UNWRAP_LABELED_EXPRESSION)) {

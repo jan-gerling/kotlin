@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
+import org.jetbrains.kotlin.idea.util.doNotAnalyzeInCidrIde
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.endOffset
@@ -153,6 +154,7 @@ class KotlinInlayParameterHintsProvider : InlayParameterHintsProvider {
         )
 
     override fun getHintInfo(element: PsiElement): HintInfo? {
+        if (element.doNotAnalyzeInCidrIde) return null
         val hintType = HintType.resolve(element) ?: return null
         return when (hintType) {
             HintType.PARAMETER_HINT -> {
@@ -164,6 +166,7 @@ class KotlinInlayParameterHintsProvider : InlayParameterHintsProvider {
     }
 
     override fun getParameterHints(element: PsiElement?): List<InlayInfo> {
+        if (element.doNotAnalyzeInCidrIde) return emptyList()
         val resolveToEnabled = HintType.resolveToEnabled(element) ?: return emptyList()
         return resolveToEnabled.provideHints(element!!)
     }

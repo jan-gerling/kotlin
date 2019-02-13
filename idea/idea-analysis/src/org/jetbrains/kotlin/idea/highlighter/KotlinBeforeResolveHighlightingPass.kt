@@ -32,6 +32,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiRecursiveElementVisitor
+import org.jetbrains.kotlin.idea.util.doNotAnalyzeInCidrIde
 import org.jetbrains.kotlin.psi.KtFile
 
 class KotlinBeforeResolveHighlightingPass(
@@ -68,8 +69,11 @@ class KotlinBeforeResolveHighlightingPass(
         }
 
         override fun createHighlightingPass(file: PsiFile, editor: Editor): TextEditorHighlightingPass? {
-            if (file !is KtFile) return null
-            return KotlinBeforeResolveHighlightingPass(file, editor.document)
+            return when {
+                file !is KtFile -> null
+                file.doNotAnalyzeInCidrIde -> null
+                else -> KotlinBeforeResolveHighlightingPass(file, editor.document)
+            }
         }
     }
 }

@@ -36,6 +36,7 @@ import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.getResolutionFacade
 import org.jetbrains.kotlin.idea.completion.smart.SmartCompletion
 import org.jetbrains.kotlin.idea.completion.smart.SmartCompletionSession
+import org.jetbrains.kotlin.idea.util.doNotAnalyzeInCidrIde
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
@@ -64,8 +65,8 @@ class KotlinCompletionContributor : CompletionContributor() {
     }
 
     override fun beforeCompletion(context: CompletionInitializationContext) {
-        val psiFile = context.file
-        if (psiFile !is KtFile) return
+        val psiFile = context.file as? KtFile ?: return
+        if (psiFile.doNotAnalyzeInCidrIde) return
 
         // this code will make replacement offset "modified" and prevents altering it by the code in CompletionProgressIndicator
         context.replacementOffset = context.replacementOffset
@@ -234,7 +235,7 @@ class KotlinCompletionContributor : CompletionContributor() {
         val position = parameters.position
         val parametersOriginFile = parameters.originalFile
         if (position.containingFile !is KtFile || parametersOriginFile !is KtFile) return
-        if (parametersOriginFile.doNotComplete == true) return
+        if (parametersOriginFile.doNotComplete == true || parametersOriginFile.doNotAnalyzeInCidrIde) return
 
         val toFromOriginalFileMapper = ToFromOriginalFileMapper.create(parameters)
 

@@ -33,6 +33,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.idea.core.script.IdeScriptReportSink
+import org.jetbrains.kotlin.idea.util.doNotAnalyzeInCidrIde
 import org.jetbrains.kotlin.psi.KtFile
 import kotlin.script.experimental.dependencies.ScriptReport
 
@@ -109,8 +110,11 @@ class ScriptExternalHighlightingPass(
         }
 
         override fun createHighlightingPass(file: PsiFile, editor: Editor): TextEditorHighlightingPass? {
-            if (file !is KtFile) return null
-            return ScriptExternalHighlightingPass(file, editor.document)
+            return when {
+                file !is KtFile -> null
+                file.doNotAnalyzeInCidrIde -> null
+                else -> ScriptExternalHighlightingPass(file, editor.document)
+            }
         }
     }
 }

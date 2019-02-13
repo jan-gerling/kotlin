@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.parameterInfo.HintType
 import org.jetbrains.kotlin.idea.parameterInfo.TYPE_INFO_PREFIX
 import org.jetbrains.kotlin.idea.parameterInfo.provideLambdaReturnValueHints
+import org.jetbrains.kotlin.idea.util.doNotAnalyzeInCidrIde
 import org.jetbrains.kotlin.psi.KtExpression
 import java.util.*
 
@@ -91,8 +92,11 @@ class KotlinCodeHintsPass(private val myRootElement: PsiElement, editor: Editor)
             }
 
             override fun createHighlightingPass(file: PsiFile, editor: Editor): TextEditorHighlightingPass? {
-                if (file.language != KotlinLanguage.INSTANCE) return null
-                return KotlinCodeHintsPass(file, editor)
+                return when {
+                    file.language != KotlinLanguage.INSTANCE -> null
+                    file.doNotAnalyzeInCidrIde -> null
+                    else -> KotlinCodeHintsPass(file, editor)
+                }
             }
         }
 

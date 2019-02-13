@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
+import org.jetbrains.kotlin.idea.util.doNotAnalyzeInCidrIde
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -113,7 +114,10 @@ fun KtFile.resolveImportReference(fqName: FqName): Collection<DeclarationDescrip
 // See also: ResolveSessionForBodies, ResolveElementCache
 @JvmOverloads
 fun KtElement.analyze(bodyResolveMode: BodyResolveMode = BodyResolveMode.FULL): BindingContext =
-    getResolutionFacade().analyze(this, bodyResolveMode)
+    if (doNotAnalyzeInCidrIde)
+        BindingContext.EMPTY
+    else
+        getResolutionFacade().analyze(this, bodyResolveMode)
 
 fun KtElement.analyzeAndGetResult(): AnalysisResult {
     val resolutionFacade = getResolutionFacade()
